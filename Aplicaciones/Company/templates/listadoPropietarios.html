@@ -1,0 +1,203 @@
+{% extends "./plantilla.html" %}
+{% block body %}
+<br>
+<div class="card">
+    <div class="card-title text-center">
+        <h3><b>List of Owners</b></h3>
+    </div>
+    <br>
+    <div class="text-end">
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPropiertyModal">Add</a>
+    </div>
+    <br>
+    <!-- Tabla con el id tbl-propierty dentro de un contenedor que evita el desbordamiento -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover" id="tbl-propierty">
+            <thead>
+                <tr>
+                    <th><b>ID</b></th>
+                    <th><b>Name</b></th>
+                    <th><b>Last Name</b></th>
+                    <th><b>Email</b></th>
+                    <th><b>Phone</b></th>
+                    <th><b>City</b></th>
+                    <th><b>ACTIONS</b></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for property in property %}
+                <tr>
+                    <td>{{ property.id_prop }}</td>
+                    <td>{{ property.name_prop }}</td>
+                    <td>{{ property.last_name_prop }}</td>
+                    <td>{{ property.email_prop }}</td>
+                    <td>{{ property.phone_prop }}</td>
+                    <td>{{ property.fk_id_city.name_city }}</td>
+                    <td>
+                        <a href="#" class="btn btn-warning" onclick="editPropierty({{ property.id_prop }})">Edit</a>
+                        <br> <br>
+                        <a href="#" onclick="deletePropierty({{ property.id_prop }})"
+                            class="btn btn-danger">Eliminate</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para agregar una nueva propiedad -->
+    <div class="modal fade" id="addPropiertyModal" tabindex="-1" aria-labelledby="addPropiertyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPropiertyModalLabel">Add New Propierty</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para agregar una propiedad -->
+                    <form action="{% url 'add_propierty' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name_prop" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name_prop" name="name_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name_prop" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name_prop" name="last_name_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email_prop" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email_prop" name="email_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_prop" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="phone_prop" name="phone_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fk_id_city" class="form-label">City</label>
+                            <select class="form-control" id="fk_id_city" name="fk_id_city" required>
+                                <!-- Aquí se agregan las opciones de ciudad -->
+                                <option value="" disabled selected>Select a city</option>
+                                {% for ciudadTemporal in city %}
+                                <option value="{{ ciudadTemporal.id_city }}">{{ ciudadTemporal.name_city }}</option>
+                                {% empty %}
+                                <option>No cities available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Propierty</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar una propiedad -->
+    <div class="modal fade" id="editPropiertyModal" tabindex="-1" aria-labelledby="editPropiertyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPropiertyModalLabel">Edit Propierty</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para editar una propiedad -->
+                    <form id="editPropiertyForm" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="editName" name="name_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="editLastName" name="last_name_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPhone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="editPhone" name="phone_prop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCity" class="form-label">City</label>
+                            <select class="form-control" id="editCity" name="fk_id_city" required>
+                                <option value="" disabled>Select a city</option>
+                                {% for ciudadTemporal in city %}
+                                <option value="{{ ciudadTemporal.id_city }}">{{ ciudadTemporal.name_city }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" id="editPropiertyId" name="id_prop">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            $('#tbl-propierty').DataTable();  // Inicializa DataTable en la tabla con el id tbl-propierty
+        });
+
+        function editPropierty(propId) {
+            $.ajax({
+                url: '{% url "get_propierty_data" %}',
+                type: 'GET',
+                data: { 'id': propId },
+                success: function(response) {
+                    // Asignamos los datos al formulario
+                    $('#editPropiertyId').val(response.id_prop);
+                    $('#editName').val(response.name_prop);
+                    $('#editLastName').val(response.last_name_prop);
+                    $('#editEmail').val(response.email_prop);
+                    $('#editPhone').val(response.phone_prop);
+                    $('#editCity').val(response.fk_id_city);  // Esto asignará el valor de la ciudad seleccionada
+        
+                    // Mostramos el modal de edición
+                    $('#editPropiertyModal').modal('show');
+                }
+            });
+        }
+
+        $('#editPropiertyForm').on('submit', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '{% url "update_propierty" %}',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.status === 'success') {
+                        $('#editPropiertyModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Error updating property');
+                    }
+                }
+            });
+        });
+
+        function deletePropierty(propId) {
+            if (confirm('Are you sure you want to delete this property?')) {
+                $.ajax({
+                    url: '{% url "delete_propierty" %}',
+                    type: 'POST',
+                    data: { 'id_prop': propId, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            alert('Property deleted');
+                            location.reload();
+                        } else {
+                            alert('Error deleting property');
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+    {% endblock %}

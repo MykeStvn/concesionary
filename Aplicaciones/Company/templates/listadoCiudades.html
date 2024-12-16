@@ -1,0 +1,174 @@
+{% extends "./plantilla.html" %}
+
+{% block body %}
+<br>
+<div class="card">
+    <div class="card-title text-center">
+        <h3><b>List of Cities</b></h3>
+    </div>
+</div>
+<br>
+<div class="text-end">
+    <!-- Boton para lanzar un modal y agregar una ciudad -->
+    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCityModal">Add</a>
+</div>
+<br>
+
+<!-- Tabla con el id tbl-city dentro de un contenedor que evita el desbordamiento -->
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover" id="tbl-city">
+        <thead>
+            <tr>
+                <th><b>ID</b></th>
+                <th><b>NAME</b></th>
+                <th><b>ACTIONS</b></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ciudadTemporal in city %}
+            <tr>
+                <td>{{ ciudadTemporal.id_city }}</td>
+                <td>{{ ciudadTemporal.name_city }}</td>
+                <td>
+                    <!-- Button para editar ciudad -->
+                    <a href="#" class="btn btn-warning" onclick="editCity({{ ciudadTemporal.id_city }})">Edit</a>
+                    <!-- Button para eliminar ciudad -->
+                    <br> <br>
+                    <a href="#" onclick="deleteCity({{ ciudadTemporal.id_city }})" class="btn btn-danger">Eliminate</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para agregar una nueva ciudad -->
+<div class="modal fade" id="addCityModal" tabindex="-1" aria-labelledby="addCityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCityModalLabel">Add New City</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para agregar una ciudad -->
+                <form action="{% url 'agregar_ciudad' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="cityName" class="form-label">City Name</label>
+                        <input type="text" class="form-control" id="cityName" name="name_city" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add City</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar una ciudad -->
+<div class="modal fade" id="editCityModal" tabindex="-1" aria-labelledby="editCityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCityModalLabel">Edit City</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para editar una ciudad -->
+                <form id="editCityForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="editCityName" class="form-label">City Name</label>
+                        <input type="text" class="form-control" id="editCityName" name="name_city" required>
+                    </div>
+                    <input type="hidden" id="editCityId" name="id_city">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+<!-- Inicializa DataTable correctamente después de cargar los recursos -->
+<script>
+    $(document).ready(function () {
+        $('#tbl-city').DataTable();  // Inicializa el DataTable en la tabla con el id tbl-city
+    });
+
+    // Función para cargar los datos de la ciudad en el modal de edición
+    function editCity(cityId) {
+        // Realizamos una solicitud AJAX para obtener los datos de la ciudad
+        $.ajax({
+            url: '{% url "get_city_data" %}',  // URL para obtener los datos de la ciudad
+            type: 'GET',
+            data: {
+                'id': cityId  // Pasamos el ID de la ciudad a editar
+            },
+            success: function (response) {
+                // Si la solicitud fue exitosa, llenamos el formulario con los datos de la ciudad
+                $('#editCityId').val(response.id_city);  // Rellenamos el campo oculto con el id
+                $('#editCityName').val(response.name_city);  // Rellenamos el campo de nombre de la ciudad
+
+                // Mostramos el modal de edición
+                $('#editCityModal').modal('show');
+            },
+            error: function (xhr, status, error) {
+                alert('Error al cargar los datos de la ciudad');
+            }
+        });
+    }
+
+    // Función para enviar los datos del formulario de edición
+    $('#editCityForm').on('submit', function (e) {
+        e.preventDefault(); // Prevenimos el comportamiento por defecto del formulario
+
+        $.ajax({
+            url: '{% url "update_city" %}',  // URL para actualizar los datos de la ciudad
+            type: 'POST',
+            data: $(this).serialize(),  // Serializamos el formulario para enviarlo
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Si la actualización fue exitosa, cerramos el modal y recargamos la página
+                    $('#editCityModal').modal('hide');
+                    location.reload();  // Recargamos la página para reflejar los cambios
+                } else {
+                    alert('Error al actualizar la ciudad');
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('Error al actualizar la ciudad');
+            }
+        });
+    });
+
+    // Función para eliminar una ciudad
+    function deleteCity(cityId) {
+        // Confirmar antes de eliminar
+        if (confirm('¿Está seguro de que desea eliminar esta ciudad?')) {
+            // Realizamos una solicitud AJAX para eliminar la ciudad
+            $.ajax({
+                url: '{% url "delete_city" %}',  // URL para eliminar la ciudad
+                type: 'POST',
+                data: {
+                    'id_city': cityId,  // Pasamos el ID de la ciudad a eliminar
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Pasamos el token CSRF para seguridad
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Si la eliminación fue exitosa, eliminamos la fila de la tabla
+                        alert('Ciudad eliminada exitosamente');
+                        location.reload();  // Recargamos la página para reflejar los cambios
+                    } else {
+                        alert('Error al eliminar la ciudad');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Error al eliminar la ciudad');
+                }
+            });
+        }
+    }
+</script>
+
+{% endblock %}

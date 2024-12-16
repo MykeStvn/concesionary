@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Incluir jQuery (necesario para DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!--{% load static %}
+    <script src="{% static 'js/cities.js' %}"></script>-->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- CSS de DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+
+    <title>CompanyUTC</title>
+    <!--
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        .content {
+            min-height: calc(100vh - 150px);
+        }
+    </style>
+    -->
+</head>
+
+<body class="d-flex flex-column">
+
+    <!--inicio NAVBAR-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'inicio' %}">CompanyUTC</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'listadoCiudades' %}">City</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url "listadoModelos" %}">Model</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url "listadoPropietarios" %}">Propierty</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url "listadoVehiculos" %}">Vehicle</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!--final NAVBAR-->
+
+    <!--inicio de los BODYS-->
+    <div class="content">
+        {% block body %}
+        {% endblock %}
+    </div>
+    <!--final de los BODYS-->
+
+    <!--inicio FOOTER-->
+    <footer class="bg-dark text-white text-center py-4 mt-auto">
+        <div>
+            <p><b>Development of</b></p>
+            <p>@Lenin Flores AND @Michael LLumiugsi</p>
+            <p>Technical University of Cotopaxi</p>
+        </div>
+    </footer>
+    <!--final FOOTER-->
+
+    <!-- JS de Bootstrap (requiere jQuery) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <!-- JS de DataTables -->
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+</body>
+
+</html>

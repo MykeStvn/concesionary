@@ -1,0 +1,168 @@
+{% extends "./plantilla.html" %}
+{% block body %}
+<br>
+<!--título-->
+<div class="card">
+    <div class="card-title text-center">
+        <h3><b>List of Models</b></h3>
+    </div>
+</div>
+<!--boton parte derecha de la pantalla-->
+<div class="text-end">
+    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModelModal">Add</a>
+</div>
+<br>
+<!--tabla para cargar datos-->
+<div class="table-resposive">
+    <table class="table table-bordered table-striped table-hover" id="tbl-model">
+        <thead>
+            <tr>
+                <th><b>ID</b></th>
+                <th><b>NAME</b></th>
+                <th><b>ACTIONS</b></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <!-- mando a llamar con JINJA2 para llenar la tabla con datos -->
+            {% for modeloTemporal in model %}
+            <tr>
+                <td>{{ modeloTemporal.id_model}}</td>
+                <td>{{ modeloTemporal.name_model}}</td>
+                <td> 
+                    <a href="#" class="btn btn-warning" onclick="editModel({{ modeloTemporal.id_model }})">Edit</a>
+                    <br> <br>
+                    <a href="#" onclick="deleteModel({{ modeloTemporal.id_model }})" class="btn btn-danger">Eliminate</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- Modal para agregar una nueva ciudad -->
+<div class="modal fade" id="addModelModal" tabindex="-1" aria-labelledby="addModelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModelModalLabel">Add New Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para agregar una ciudad -->
+                <form action="{% url 'agregar_modelo' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="modelName" class="form-label">Model Name</label>
+                        <input type="text" class="form-control" id="modelName" name="name_model" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Model</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal para editar una ciudad -->
+<div class="modal fade" id="editModelModal" tabindex="-1" aria-labelledby="editModelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModelModalLabel">Edit Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para editar una ciudad -->
+                <form id="editModelForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="editModelName" class="form-label">Model Name</label>
+                        <input type="text" class="form-control" id="editModelName" name="name_model" required>
+                    </div>
+                    <input type="hidden" id="editModelId" name="id_model">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+<script>
+    $(document).ready(function () {
+        $('#tbl-model').DataTable();  // Inicializa el DataTable en la tabla con el id tbl-model
+    });
+    //Función para cargar los datos de MODEL para la edición
+    function editModel(modelId){
+        //comienzo de la solicitud ajax para obtener datos
+        $.ajax({
+            url: '{% url "get_model_data" %}', //con esto llamo a los datos model
+            type: 'GET', //para obtener los datos
+            data:{
+                'id': modelId //pasamos el ID de la ciudad 
+            },
+            success: function(response){
+                //si es exitoso
+                $('#editModelId').val(response.id_model); //campo oculto del ID
+                $('#editModelName').val(response.name_model); // relleno el campo de nombre ciudad
+
+                //Abrir modal de edición con SHOW
+                $('#editModelModal').modal('show');
+            },
+            error: function (xhr, status, error){
+                alert('Error al cargar los datos del modelo');
+            }
+        });
+    }
+    // final de la función para traer los datos
+    //FUNCION ENVIO DE LOS DATOS ACTUALIZADOS
+    $('#editModelForm').on('submit',function(e){
+        e.preventDefault(); //prevenimos el comportamiento del formulario
+        $.ajax({
+            url: '{% url "update_model" %}', //URL para actualizar los datos
+            type: 'POST',
+            data: $(this).serialize(), //SERIALIZE para enviar el formulario
+            success: function(response){
+                if(response.status === 'success'){
+                    //actualización exitosa (cerrar modal)
+                    $('#editModelModal').modal('hide');
+                    location.reload();
+                } else { 
+                    alert('Error al actualizar la ciudad');
+                }
+            },
+            error: function(xhr, status, error){
+                alert('Error al actualizar la ciudad');
+            }
+        });
+    });
+    // final para actualización modelos
+    //INICIO DE ELIMINAR MODELOS
+    function deleteModel(modelId) {
+        //valido antes de eliminar
+        if (confirm('¿Esta seguro que desea eliminar este modelo?')) {
+            //Comienzo de solicitud AJAX
+            $.ajax({
+                url: '{% url "delete_model" %}',
+                type: 'POST',
+                data: {
+                    'id_model': modelId, //pasar ID del modelo
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' //pasra el token CSRF 
+                },
+                success: function(response) {
+                    //validar para confirmar eliminaación exitosa
+                    if(response.status === 'success') {
+                        alert('Modelo eliminado exitosamente');
+                        location.reload(); //recargar página
+                    } else {
+                        alert('Error al eliminar modelo');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error: " + xhr.responseText);  // Muestra el mensaje de error detallado en la consola
+                    alert('Error al eliminar el modelo');
+                }
+            });
+        }
+    }
+</script>
+
+{% endblock %}
