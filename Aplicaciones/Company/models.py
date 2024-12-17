@@ -42,9 +42,21 @@ class Propierty (models.Model):
     #Relationship of foreign key whit table City
     fk_id_city = models.ForeignKey(City, on_delete=models.SET_NULL,null=True, blank=True,db_column='fk_id_city')
     class Meta:
-        db_table = 'propierty' 
+        db_table = 'propierty'
+
     def __str__(self):
         return f"{self.name_prop} {self.last_name_prop}"
+
+    def save(self, *args, **kwargs):
+        # Convertir todos los campos de texto a mayúsculas antes de guardar
+        self.name_prop = self.name_prop.upper()
+        self.last_name_prop = self.last_name_prop.upper()
+        self.email_prop = self.email_prop.upper()
+        self.phone_prop = self.phone_prop.upper()
+        
+        # Llamar al método save() de la clase base para guardar el objeto
+        super(Propierty, self).save(*args, **kwargs)
+
 
 #Vehicle
 class Vehicle(models.Model):
