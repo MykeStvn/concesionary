@@ -9,9 +9,9 @@
     <div class="text-end">
         <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPropiertyModal">Add</a>
     </div>
-    <br>
     <!-- Tabla con el id tbl-propierty dentro de un contenedor que evita el desbordamiento -->
     <div class="table-responsive">
+        <br>
         <table class="table table-bordered table-striped table-hover" id="tbl-propierty">
             <thead>
                 <tr>
@@ -43,6 +43,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        <br>
     </div>
 
     <!-- Modal para agregar una nueva propiedad -->
@@ -150,7 +151,7 @@
                 url: '{% url "get_propierty_data" %}',
                 type: 'GET',
                 data: { 'id': propId },
-                success: function(response) {
+                success: function (response) {
                     // Asignamos los datos al formulario
                     $('#editPropiertyId').val(response.id_prop);
                     $('#editName').val(response.name_prop);
@@ -158,7 +159,7 @@
                     $('#editEmail').val(response.email_prop);
                     $('#editPhone').val(response.phone_prop);
                     $('#editCity').val(response.fk_id_city);  // Esto asignará el valor de la ciudad seleccionada
-        
+
                     // Mostramos el modal de edición
                     $('#editPropiertyModal').modal('show');
                 }
@@ -173,7 +174,20 @@
                 data: $(this).serialize(),
                 success: function (response) {
                     if (response.status === 'success') {
+                        // Ocultar el modal
                         $('#editPropiertyModal').modal('hide');
+
+                        // Actualizar la fila en la tabla
+                        var updatedRow = $('#propiertyTable').find('tr').filter(function () {
+                            return $(this).find('td').eq(0).text() == response.id_prop; // Buscar la fila con el id_prop
+                        });
+
+                        // Actualizar los datos de la propiedad en la tabla
+                        updatedRow.find('td').eq(0).text(response.name_prop); // Nombre
+                        updatedRow.find('td').eq(1).text(response.last_name_prop); // Apellido
+                        updatedRow.find('td').eq(2).text(response.email_prop); // Correo
+                        updatedRow.find('td').eq(3).text(response.phone_prop); // Teléfono
+                        updatedRow.find('td').eq(4).text(response.city); // Ciudad
                         location.reload();
                     } else {
                         alert('Error updating property');
@@ -181,7 +195,6 @@
                 }
             });
         });
-
         function deletePropierty(propId) {
             if (confirm('Are you sure you want to delete this property?')) {
                 $.ajax({

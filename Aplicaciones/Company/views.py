@@ -253,32 +253,29 @@ def update_propierty(request):
     if request.method == 'POST':
         prop_id = request.POST.get('id_prop')
         prop = get_object_or_404(Propierty, id_prop=prop_id)
-        
-        # Obtener los datos del formulario
-        name = request.POST.get('name_prop')
-        last_name = request.POST.get('last_name_prop')
-        email = request.POST.get('email_prop')
-        phone = request.POST.get('phone_prop')
-        fk_id_city = request.POST.get('fk_id_city')
 
-        # Actualizar los campos de la propiedad
-        prop.name_prop = name
-        prop.last_name_prop = last_name
-        prop.email_prop = email
-        prop.phone_prop = phone
-        
-        # Obtener la ciudad seleccionada por su ID
-        if fk_id_city:
-            city = City.objects.get(id_city=fk_id_city)
-            prop.fk_id_city = city
-        
-        # Guardar los cambios en la base de datos
+        # Actualizar los datos de la propiedad
+        prop.name_prop = request.POST.get('name_prop')
+        prop.last_name_prop = request.POST.get('last_name_prop')
+        prop.email_prop = request.POST.get('email_prop')
+        prop.phone_prop = request.POST.get('phone_prop')
+        prop.fk_id_city_id = request.POST.get('fk_id_city')
+
+        # Guardar la propiedad
         prop.save()
 
-        # Redirigir al listado de propiedades
-        return redirect('listadoPropietarios')  # Redirige a la página de listadoPropietarios
+        # Devolver los nuevos datos actualizados para actualizar la tabla en el frontend
+        return JsonResponse({
+            'status': 'success',
+            'id_prop': prop.id_prop,
+            'name_prop': prop.name_prop,
+            'last_name_prop': prop.last_name_prop,
+            'email_prop': prop.email_prop,
+            'phone_prop': prop.phone_prop,
+            'city': prop.fk_id_city.name_city  # Asumiendo que la propiedad 'fk_id_city' es un objeto relacionado con la ciudad
+        })
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
 # Vista para eliminar una propiedad
 def delete_propierty(request):
