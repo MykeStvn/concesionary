@@ -61,7 +61,7 @@ class Propierty (models.Model):
 #Vehicle
 class Vehicle(models.Model):
     id_veh = models.AutoField(primary_key=True)
-    year_fabrication_veh = models.IntegerField
+    year_fabrication_veh = models.IntegerField()
     price_veh = models.DecimalField(max_digits=10, decimal_places=2)
     color_veh = models.CharField(255)
     plate_veh = models.CharField(255)

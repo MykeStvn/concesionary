@@ -290,5 +290,136 @@ def delete_propierty(request):
 #Renderización del template listadoVehiculos
 def listadoVehiculos(request):
     vehicleBdd = Vehicle.objects.all()
-    return render(request,"listadoVehiculos.html",{'vehicle':vehicleBdd})
+    propertyBdd = Propierty.objects.all()
+    modelBdd = Model.objects.all()
+    return render(request,"listadoVehiculos.html",{'vehicle':vehicleBdd,'property':propertyBdd,'model':modelBdd})
+        
+#AÑADIR UN NUEVO VEHICULO
+def add_vehicle(request):
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        year_fabrication_veh = request.POST.get('year_fabrication_veh')
+        price_veh_str = request.POST.get('price_veh', '').strip()
+        color_veh = request.POST.get('color_veh')
+        plate_veh = request.POST.get('plate_veh')
+        fk_id_prop = request.POST.get('fk_id_prop')
+        fk_id_model = request.POST.get('fk_id_model')
+
+        # Validar que el precio no esté vacío y que sea un valor válido
+        if not price_veh_str:
+            return JsonResponse({'status': 'error', 'message': 'Price is required'})
+
+        try:
+            price_veh = Decimal(price_veh_str)
+        except InvalidOperation:
+            return JsonResponse({'status': 'error', 'message': 'Invalid price format'})
+
+        # Validar que el año de fabricación no esté vacío y sea un número entero
+        if not year_fabrication_veh:
+            return JsonResponse({'status': 'error', 'message': 'Year of fabrication is required'})
+
+        try:
+            year_fabrication_veh = int(year_fabrication_veh)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid year format'})
+
+        # Verificar que fk_id_prop no esté vacío y sea un valor válido
+        if fk_id_prop:
+            try:
+                prop = Propierty.objects.get(id_prop=fk_id_prop)
+            except Propierty.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Property not found'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Property is required'})
+
+        # Verificar que fk_id_model no esté vacío y sea un valor válido
+        if fk_id_model:
+            try:
+                model = Model.objects.get(id_model=fk_id_model)
+            except Model.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Model not found'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Model is required'})
+
+        # Crear un nuevo vehículo
+        Vehicle.objects.create(
+            year_fabrication_veh=year_fabrication_veh,
+            price_veh=price_veh,
+            color_veh=color_veh,
+            plate_veh=plate_veh,
+            fk_id_prop=prop,  # Asignar el objeto Propierty, no solo el ID
+            fk_id_model=model,  # Asignar el objeto Model, no solo el ID
+        )
+
+        # Redirigir a la lista de vehículos
+        return redirect('listadoVehiculos')
+
+    # Si no es una solicitud POST, redirigir normalmente
+    return redirect('listadoVehiculos')
+
+# Vista para obtener los datos de una propiedad para editar
+def get_vehicle_data(request):
+    veh_id = request.GET.get('id_veh')
+    veh = get_object_or_404(Vehicle, id_veh=veh_id)
+    return JsonResponse({
+        'id_veh': veh.id_veh,
+        'year_fabrication_veh': veh.year_fabrication_veh,
+        'price_veh': veh.price_veh,
+        'color_veh': veh.color_veh,
+        'plate_veh': veh.plate_veh,
+        'fk_id_model': veh.fk_id_model.id_model,  # Modelo seleccionada
+        'fk_id_prop': veh.fk_id_prop.id_prop  # Modelo seleccionada
+    })
+
+
+# Vista para actualizar los datos de una propiedad
+def update_vehicle(request):
+    if request.method == 'POST':
+        # Obtener el ID del vehículo
+        vehicle_id = request.POST.get('id_veh')
+        vehicle = get_object_or_404(Vehicle, id_veh=vehicle_id)
+
+        # Actualizar los datos del vehículo
+        vehicle.year_fabrication_veh = request.POST.get('year_fabrication_veh')
+        vehicle.price_veh = request.POST.get('price_veh')
+        vehicle.color_veh = request.POST.get('color_veh')
+        vehicle.plate_veh = request.POST.get('plate_veh')
+
+        # Obtener las claves foráneas relacionadas
+        fk_id_prop = request.POST.get('fk_id_prop')
+        fk_id_model = request.POST.get('fk_id_model')
+
+        # Validar y asignar propiedad relacionada
+        if fk_id_prop:
+            vehicle.fk_id_prop_id = fk_id_prop  # Usamos `_id` para asignar directamente la clave foránea
+        
+        # Validar y asignar modelo relacionado
+        if fk_id_model:
+            vehicle.fk_id_model_id = fk_id_model  # Usamos `_id` para asignar directamente la clave foránea
+
+        # Guardar el vehículo actualizado
+        vehicle.save()
+
+        # Devolver los datos actualizados para el frontend
+        return JsonResponse({
+            'status': 'success',
+            'id_veh': vehicle.id_veh,
+            'year_fabrication_veh': vehicle.year_fabrication_veh,
+            'price_veh': vehicle.price_veh,
+            'color_veh': vehicle.color_veh,
+            'plate_veh': vehicle.plate_veh,
+            'prop_name': vehicle.fk_id_prop.name_prop if vehicle.fk_id_prop else None,
+            'model_name': vehicle.fk_id_model.name_model if vehicle.fk_id_model else None
+        })
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+# Vista para eliminar una propiedad
+def delete_vehicle(request):
+    if request.method == 'POST':
+        veh_id = request.POST.get('id_veh')
+        veh = get_object_or_404(Vehicle, id_veh=veh_id)
+        veh.delete()
+        return JsonResponse({'status': 'success'})
+
 #FIN VEHICLE

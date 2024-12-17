@@ -7,9 +7,260 @@
     </div>
     <br>
     <div class="text-end">
-        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPropiertyModal">Add</a>
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addVehicleModal">Add</a>
     </div>
     <br>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover" id="tbl-vehicle">
+            <thead>
+                <tr>
+                    <th><b>ID</b></th>
+                    <th><b>Year Fabrication</b></th>
+                    <th><b>Price</b></th>
+                    <th><b>Color</b></th>
+                    <th><b>Plate</b></th>
+                    <th><b>Model</b></th>
+                    <th><b>Propierty</b></th>
+                    <th><b>ACTIONS</b></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicle %}
+                
+                <tr>
+                    <td>{{ vehicle.id_veh }}</td>
+                    <td>{{ vehicle.year_fabrication_veh }}</td>
+                    <td>{{ vehicle.price_veh }}</td>
+                    <td>{{ vehicle.color_veh }}</td>
+                    <td>{{ vehicle.plate_veh }}</td>
+                    <td>{{ vehicle.fk_id_model.name_model }}</td>
+                    <td>{{ vehicle.fk_id_prop.name_prop }}</td>                    
+                    <td>
+                        <a href="#" class="btn btn-warning" onclick="editVehicle({{ vehicle.id_veh }})">Edit</a>
+                        <br> <br>
+                        <a href="#" onclick="deleteVehicle({{ vehicle.id_veh }})"
+                            class="btn btn-danger">Eliminate</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal para agregar un nuevo vehiculo -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para agregar una propiedad -->
+                    <form action="{% url 'add_vehicle' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="year_fabrication_veh" class="form-label">Year Fabrication</label>
+                            <input type="number" class="form-control" id="year_fabrication_veh" name="year_fabrication_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price_veh" class="form-label">Price</label>
+                            <input type="text" class="form-control" id="price_veh" name="price_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color_veh" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="color_veh" name="color_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="plate_veh" class="form-label">Plate</label>
+                            <input type="text" class="form-control" id="plate_veh" name="plate_veh" required>
+                        </div>                        
+                        <div class="mb-3">
+                            <label for="fk_id_prop" class="form-label">Propierty</label>
+                            <select class="form-control" id="fk_id_prop" name="fk_id_prop" required>
+                                <!-- Aquí se agregan las opciones de ciudad -->
+                                <option value="" disabled selected>Select a Propierty</option>
+                                {% for propietarioTemporal in property %}
+                                <option value="{{ propietarioTemporal.id_prop }}">{{ propietarioTemporal.name_prop }}</option>
+                                {% empty %}
+                                <option>No propierty available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fk_id_model" class="form-label">Model</label>
+                            <select class="form-control" id="fk_id_model" name="fk_id_model" required>
+                                <!-- Aquí se agregan las opciones de ciudad -->
+                                <option value="" disabled selected>Select a Model</option>
+                                {% for modeloTemporal in model %}
+                                <option value="{{ modeloTemporal.id_model }}">{{ modeloTemporal.name_model }}</option>
+                                {% empty %}
+                                <option>No model available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Vehicle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editVehicleModal" tabindex="-1" aria-labelledby="editVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editVehicleModalLabel">Edit Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para editar un vehículo -->
+                    <form id="editVehicleForm" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        <input type="hidden" name="id_veh" id="editVehicleId"> <!-- Agrega este campo oculto para el ID del vehículo -->
+                        <div class="mb-3">
+                            <label for="year_fabrication_veh" class="form-label">Year Fabrication</label>
+                            <input type="number" class="form-control" id="editYearFabrication" name="year_fabrication_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price_veh" class="form-label">Price</label>
+                            <input type="text" class="form-control" id="editPrice" name="price_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color_veh" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="editColor" name="color_veh" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="plate_veh" class="form-label">Plate</label>
+                            <input type="text" class="form-control" id="editPlate" name="plate_veh" required>
+                        </div>                        
+                        <div class="mb-3">
+                            <label for="editProperty" class="form-label">Propierty</label>
+                            <select class="form-control" id="editProperty" name="fk_id_prop" required>
+                                <option value="" disabled>Select a Propierty</option>
+                                {% for propietarioTemporal in property %}
+                                <option value="{{ propietarioTemporal.id_prop }}">
+                                    {{ propietarioTemporal.name_prop }}
+                                </option>
+                                {% empty %}
+                                <option>No Propierty available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editModel" class="form-label">Model</label>
+                            <select class="form-control" id="editModel" name="fk_id_model" required>                                
+                                <option value="" disabled>Select a Model</option>
+                                {% for modeloTemporal in model %}
+                                <option value="{{ modeloTemporal.id_model }}">
+                                    {{ modeloTemporal.name_model }}
+                                </option>
+                                {% empty %}
+                                <option>No Model available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Vehicle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     
 </div>
+
+    
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#tbl-vehicle').DataTable();  // Inicializa DataTable en la tabla con el id tbl-vehicle
+    });
+
+    function editVehicle(vehId) {
+        $.ajax({
+            url: '{% url "get_vehicle_data" %}',  // URL para obtener los datos del vehículo
+            type: 'GET',
+            data: { 'id_veh': vehId },
+            success: function (response) {
+                // Asignamos los datos al formulario
+                $('#editVehicleId').val(response.id_veh);
+                $('#editYearFabrication').val(response.year_fabrication_veh);
+                $('#editPrice').val(response.price_veh);
+                $('#editColor').val(response.color_veh);
+                $('#editPlate').val(response.plate_veh);
+                $('#editProperty').val(response.fk_id_prop); // Asigna la propiedad relacionada
+                $('#editModel').val(response.fk_id_model); // Asigna el modelo relacionado
+
+                // Mostramos el modal de edición
+                $('#editVehicleModal').modal('show');
+            },
+            error: function() {
+                alert('Error al obtener los datos del vehículo');
+            }
+        });
+    }
+
+    $('#editVehicleForm').on('submit', function (e) {
+        e.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
+        const formData = $(this).serialize(); // Serializar los datos del formulario
+        console.log('Form data sent:', formData); // Confirmar datos enviados
+
+        $.ajax({
+            url: '{% url "update_vehicle" %}',  // URL para actualizar el vehículo
+            type: 'POST',
+            data: formData,  // Enviar los datos serializados
+            success: function (response) {
+                console.log('Server response:', response);  // Confirmar la respuesta del servidor
+                if (response.status === 'success') {
+                    // Ocultar el modal
+                    $('#editVehicleModal').modal('hide');
+
+                    // Actualizar la fila en la tabla
+                    var updatedRow = $('#tbl-vehicle').find('tr').filter(function () {
+                        return $(this).find('td').eq(0).text() == response.id_veh; // Buscar la fila con el id_veh
+                    });
+
+                    // Actualizar los datos del vehículo en la tabla
+                    updatedRow.find('td').eq(1).text(response.year_fabrication_veh); // Año de fabricación
+                    updatedRow.find('td').eq(2).text(response.price_veh); // Precio
+                    updatedRow.find('td').eq(3).text(response.color_veh); // Color
+                    updatedRow.find('td').eq(4).text(response.plate_veh); // Placa
+                    updatedRow.find('td').eq(5).text(response.prop_name); // Propiedad
+                    updatedRow.find('td').eq(6).text(response.model_name); // Modelo
+                    
+                    
+                } else {
+                    alert('Error al actualizar el vehículo');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX error:', xhr.responseText); // Revisar errores AJAX
+                alert('Ha ocurrido un error al intentar actualizar el vehículo.');
+            }
+        });
+    });
+
+    function deleteVehicle(vehId) {
+        if (confirm('¿Está seguro de que quiere eliminar este vehículo?')) {
+            $.ajax({
+                url: '{% url "delete_vehicle" %}',
+                type: 'POST',
+                data: { 'id_veh': vehId, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Vehicle eliminado');
+                        location.reload();  // Recargar la página para reflejar la eliminación
+                    } else {
+                        alert('Error editing vehichle');
+                    }
+                }
+            });
+        }
+    }
+</script>
+
 {% endblock %}
