@@ -176,25 +176,25 @@
                     if (response.status === 'success') {
                         // Ocultar el modal
                         $('#editPropiertyModal').modal('hide');
-
-                        // Actualizar la fila en la tabla
-                        var updatedRow = $('#propiertyTable').find('tr').filter(function () {
-                            return $(this).find('td').eq(0).text() == response.id_prop; // Buscar la fila con el id_prop
+        
+                        // Buscar la fila correspondiente en la tabla
+                        var updatedRow = $('#tbl-propierty').find('tr').filter(function () {
+                            return $(this).find('td').eq(0).text() == response.id_prop; // Filtrar por el ID de la propiedad
                         });
-
+        
                         // Actualizar los datos de la propiedad en la tabla
-                        updatedRow.find('td').eq(0).text(response.name_prop); // Nombre
-                        updatedRow.find('td').eq(1).text(response.last_name_prop); // Apellido
-                        updatedRow.find('td').eq(2).text(response.email_prop); // Correo
-                        updatedRow.find('td').eq(3).text(response.phone_prop); // Teléfono
-                        updatedRow.find('td').eq(4).text(response.city); // Ciudad
-                        location.reload();
+                        updatedRow.find('td').eq(1).text(response.name_prop); // Nombre
+                        updatedRow.find('td').eq(2).text(response.last_name_prop); // Apellido
+                        updatedRow.find('td').eq(3).text(response.email_prop); // Correo
+                        updatedRow.find('td').eq(4).text(response.phone_prop); // Teléfono
+                        updatedRow.find('td').eq(5).text(response.city); // Ciudad
                     } else {
                         alert('Error updating property');
                     }
                 }
             });
         });
+        
         function deletePropierty(propId) {
             if (confirm('Are you sure you want to delete this property?')) {
                 $.ajax({
@@ -204,7 +204,10 @@
                     success: function (response) {
                         if (response.status === 'success') {
                             alert('Property deleted');
-                            location.reload();
+                            // Eliminar la fila correspondiente de la tabla
+                            $('#tbl-propierty').find('tr').filter(function () {
+                                return $(this).find('td').eq(0).text() == propId; // Buscar la fila con el id_prop
+                            }).remove(); // Eliminar la fila
                         } else {
                             alert('Error deleting property');
                         }
@@ -212,5 +215,6 @@
                 });
             }
         }
+        
     </script>
     {% endblock %}
